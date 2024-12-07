@@ -1,16 +1,9 @@
 <?php
-// Incluir el archivo de configuración
+// Incluir el archivo de configuración (asegúrate de que la ruta es correcta)
 include 'config.php';
 
-// Obtener los datos del formulario
-
-$nombre = $_POST["nombre"];
-$email = $_POST["email"];
-$contacto = $_POST["contacto"];
-$direccion = $_POST["direccion"];
-
 // Consulta SQL para insertar los datos
-$sql = "INSERT INTO datos (nombre, email, contacto, direccion) VALUES ('$nombre', '$email', '$contacto', '$direccion')";
+$sql = "INSERT INTO datos_esp (valor_unico, fecha) VALUES (UUID(), NOW())";
 
 // Ejecutar la consulta
 $result = mysqli_query($conexion, $sql);

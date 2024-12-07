@@ -1,10 +1,10 @@
 <?php
 // Datos de la conexión a Railway
-$servername = "";  // MySQL Host Name (Railway)
+$servername = "junction.proxy.rlwy.net";  // MySQL Host Name (Railway)
 $username = "root";                       // MySQL User Name (Railway)
-$password = "";  // MySQL Password (Railway)
+$password = "ZfiliSBjGHUnOXbVJvBETZRxRlxtGEFE";  // MySQL Password (Railway)
 $dbname = "railway";                      // MySQL DB Name (Railway)
-$port = 3306;                            // MySQL Port (Railway)
+$port = 55607;                            // MySQL Port (Railway)
 
 // Crear la conexión a Railway
 $conexion = mysqli_connect($servername, $username, $password, $dbname, $port);
@@ -12,7 +12,5 @@ $conexion = mysqli_connect($servername, $username, $password, $dbname, $port);
 // Verificar la conexión
 if (!$conexion) {
     die("Conexión fallida: " . mysqli_connect_error());
-}else{
-    echo "Conexión exitosa";
 }
 ?>
