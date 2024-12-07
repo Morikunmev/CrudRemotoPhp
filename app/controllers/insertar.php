@@ -1,6 +1,6 @@
 <?php
 // Incluir el archivo de configuración
-include 'config.php';
+include '../../includes/config.php';
 
 // Consulta SQL para insertar los datos
 $sql = "INSERT INTO datos_esp (valor_unico, fecha) VALUES (UUID(), NOW())";
