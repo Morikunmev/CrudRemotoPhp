@@ -1,6 +1,6 @@
 <?php
 // Incluir el archivo de configuración
-include '../includes/config.php';
+include 'config.php';
 
 // Verificar si se envió el formulario
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
