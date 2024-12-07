@@ -1,4 +1,7 @@
+
+
 <?php
+// ESTE ES EL INDEX
 // Incluir el archivo de configuración
 include 'config.php';
 

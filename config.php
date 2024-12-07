@@ -1,4 +1,5 @@
 <?php
+session_start();
 // Datos de la conexión a Railway
 $servername = "junction.proxy.rlwy.net";  // MySQL Host Name (Railway)
 $username = "root";                       // MySQL User Name (Railway)
