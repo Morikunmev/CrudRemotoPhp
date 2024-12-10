@@ -3,68 +3,69 @@
 include 'config.php';
 
 // Verificar si se envió el formulario para insertar
+// Verificar si se envió el formulario para insertar
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Leer el contenido de la solicitud
-    $jsonData = file_get_contents("php://input");
-    
-    // Decodificar JSON a un array asociativo
-    $data = json_decode($jsonData, true);
-    
+    // Determinar si es un request JSON o un form submit
+    $contentType = isset($_SERVER["CONTENT_TYPE"]) ? $_SERVER["CONTENT_TYPE"] : "";
+
+    if (strpos($contentType, "application/json") !== false) {
+        // Es una petición JSON (desde ESP8266)
+        $jsonData = file_get_contents("php://input");
+        $data = json_decode($jsonData, true);
+    } else {
+        // Es un submit del formulario HTML
+        $data = array(
+            'action' => $_POST['action']
+        );
+    }
+
     // Verificar si la acción está definida
     if (isset($data['action'])) {
         if ($data['action'] == 'insert') {
-            // Obtener la temperatura del JSON, si existe
+            // Obtener la temperatura del JSON si existe (para requests desde ESP8266)
             $temperatura = isset($data['temperatura']) ? $data['temperatura'] : null;
-            
+
             // Consulta SQL para insertar los datos incluyendo temperatura
             $sql = "INSERT INTO datos_esp (valor_unico, fecha, temperatura) VALUES (UUID(), NOW(), ?)";
-            
-            // Preparar la consulta
+
             $stmt = mysqli_prepare($conexion, $sql);
             mysqli_stmt_bind_param($stmt, "d", $temperatura);
-            
-            // Ejecutar la consulta preparada
+
             if (mysqli_stmt_execute($stmt)) {
                 echo json_encode([
-                    "success" => true, 
+                    "success" => true,
                     "message" => "Los datos se han insertado correctamente",
                     "temperatura" => $temperatura
                 ]);
             } else {
                 echo json_encode([
-                    "success" => false, 
+                    "success" => false,
                     "message" => "Error al insertar los datos: " . mysqli_error($conexion)
                 ]);
             }
             mysqli_stmt_close($stmt);
-            
         } elseif ($data['action'] == 'delete') {
-            // Consulta SQL para eliminar todos los datos
             $sql = "DELETE FROM datos_esp";
-            
-            // Ejecutar la consulta
+
             if (mysqli_query($conexion, $sql)) {
-                echo json_encode([
-                    "success" => true, 
-                    "message" => "Todos los datos han sido eliminados correctamente"
-                ]);
+                // Si es una petición JSON, devolver JSON
+                if (strpos($contentType, "application/json") !== false) {
+                    echo json_encode([
+                        "success" => true,
+                        "message" => "Todos los datos han sido eliminados correctamente"
+                    ]);
+                } else {
+                    // Si es formulario HTML, redirigir a la misma página
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit;
+                }
             } else {
                 echo json_encode([
-                    "success" => false, 
+                    "success" => false,
                     "message" => "Error al eliminar los datos: " . mysqli_error($conexion)
                 ]);
             }
-        } else {
-            echo json_encode([
-                "success" => false, 
-                "message" => "Acción no reconocida"
-            ]);
         }
-    } else {
-        echo json_encode([
-            "success" => false, 
-            "message" => "No se especificó ninguna acción"
-        ]);
     }
 }
 
@@ -86,6 +87,7 @@ mysqli_close($conexion);
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Monitoreo de Temperatura ESP8266</title>
     <style>
@@ -94,17 +96,22 @@ mysqli_close($conexion);
             width: 100%;
             margin-top: 20px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+
         .delete-button {
             background-color: #ff4444;
             color: white;
@@ -112,14 +119,16 @@ mysqli_close($conexion);
             padding: 5px 10px;
             cursor: pointer;
         }
+
         .actions-container {
             margin: 20px 0;
         }
     </style>
 </head>
+
 <body>
     <h1>Sistema de Monitoreo de Temperatura</h1>
-    
+
     <div class="actions-container">
         <h2>Acciones:</h2>
         <form method="POST" action="<?php echo $_SERVER["PHP_SELF"]; ?>" style="display: inline;">
@@ -145,14 +154,14 @@ mysqli_close($conexion);
         </thead>
         <tbody>
             <?php foreach ($datos as $dato): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($dato['id']); ?></td>
-                <td><?php echo htmlspecialchars($dato['valor_unico']); ?></td>
-                <td><?php echo htmlspecialchars($dato['fecha']); ?></td>
-                <td><?php echo isset($dato['temperatura']) ? 
-                    htmlspecialchars(number_format($dato['temperatura'], 2)) . ' °C' : 
-                    'No disponible'; ?></td>
-            </tr>
+                <tr>
+                    <td><?php echo htmlspecialchars($dato['id']); ?></td>
+                    <td><?php echo htmlspecialchars($dato['valor_unico']); ?></td>
+                    <td><?php echo htmlspecialchars($dato['fecha']); ?></td>
+                    <td><?php echo isset($dato['temperatura']) ?
+                            htmlspecialchars(number_format($dato['temperatura'], 2)) . ' °C' :
+                            'No disponible'; ?></td>
+                </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
@@ -160,4 +169,5 @@ mysqli_close($conexion);
     <h3>Datos en formato JSON:</h3>
     <pre><?php echo json_encode($datos, JSON_PRETTY_PRINT); ?></pre>
 </body>
+
 </html>
